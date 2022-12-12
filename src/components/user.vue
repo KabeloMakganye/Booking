@@ -63,10 +63,12 @@
                   <tr>
                     <th>Description</th>
                     <th>Date</th>
+                    <th>Delete</th>
                   </tr>
                   <tr v-for="n in lim" :key= "n">
                     <td>{{BookingsArr[n-1]}}</td>
                     <td>{{BookingDates[n-1]}}</td>
+                    <td><img @click="deleterecord(n-1)" height="40%" width="40%" src="../assets/icons8-trash-100.png" ></td>
                   </tr>
                 </table>
             </div>
@@ -121,6 +123,29 @@ export default {
     window.removeEventListener('resize', this.removemenu)
   },
   methods: {
+    deleterecord (n) {
+      swal('Are you sure?', {
+        buttons: {
+          catch: {
+            text: 'Delete',
+            value: 'catch'
+          },
+          cancel: true
+        },
+        icon: 'warning'
+      })
+        .then(async (value) => {
+          switch (value) {
+            case 'catch':
+              await fetch(`https://kabelodatabase.herokuapp.com/delete_booking/${this.BookingsArr[n]}/${this.BookingDates[n]}`)
+              this.loadhistory()
+              swal('', 'Record deleted!', 'success')
+              break
+            default:
+              swal('Delete Cancelled', '', 'error')
+          }
+        })
+    },
     async loadhistory () {
       await fetch(`https://kabelodatabase.herokuapp.com/get_all_booking`)
         .then(response => response.json())
@@ -132,9 +157,9 @@ export default {
       }
     },
     history (n) {
-      swal('Booked', '', 'success', {
+      swal('Loading', '', 'success', {
         buttons: false,
-        timer: 3000
+        timer: 1000
       })
       this.removemenu()
       this.loadhistory()
@@ -156,6 +181,8 @@ export default {
         .then(results => (this.resultsFetched_4 = results))
       console.log(this.resultsFetched_4[0].fn_add_booking)
       if (this.resultsFetched_4[0].fn_add_booking > 1) {
+        this.Descrip = ''
+        this.date_ = ''
         swal('Booked', '', 'success', {
           buttons: false,
           timer: 3000
@@ -516,7 +543,7 @@ nav {
   width: 66%;
   right: 0;
   top: 0;
-  background: #20272E;
+  background: #42333367;
   height: 100vh;
   padding: 1em;
 }

@@ -401,7 +401,7 @@ nav {
   width: 66%;
   right: 0;
   top: 0;
-  background: #20272E;
+  background: #42333367;
   height: 100vh;
   padding: 1em;
 }
