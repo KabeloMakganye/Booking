@@ -24,36 +24,52 @@
                 </ul>
 
                 <ul class="secondary-nav">
-                    <li><a href="#">History</a></li>
+                    <li id="homebooking" ><a  @click="history(2)">History</a></li>
+                    <li id="infodata" style="display: none;"><a  @click="history(1)">Book</a></li>
                     <li class="go-premium-cta"><a @click="logout">Logout</a></li>
                 </ul>
             </nav>
         </div>
     </div>
-
-    <section class="heros">
+    <section id="book" class="contact-section">
         <div class="container">
-            <div class="left-col">
-               <!-- <p class="subhead">It's Nitty &amp; Gritty</p> -->
-               <!-- <h1>Limited OFFER </h1> -->
-                <form id="registerid" onsubmit="return false">
+            <div class="contact-left">
+                <h2>New Booking</h2>
+
+                <form onsubmit="return false">
                   <div id="suggestions" class="suggestions">
-                    <label for="date">Add a booking</label>
+                    <!--  <label for="name">Name</label>
+                    <input type="text" v-model= "sugname" id="name" name="name" required oninvalid="this.setCustomValidity('Enter Name')" oninput="this.setCustomValidity('')"> -->
+
+                    <!-- <label for="email">Email</label>
+                    <input type="email" v-model= "sugemail" id="email" name="email" required oninvalid="this.setCustomValidity('Enter Valid Email')" oninput="this.setCustomValidity('')">
+-->
+                    <label for="message">Date</label>
                     <input  type= "date" id="myDate" v-model="date_" min="2022-11-26" max="2022-11-30" required pattern="\d{4}-\d{2}-\d{2}"> <br>
+
+                    <label for="decription">Description</label>
+                    <textarea style="resize: none;" name="decription" v-model= "Descrip" id="decription" cols="30" rows="10" required oninvalid="this.setCustomValidity('Enter Suggestion message')" oninput="this.setCustomValidity('')"></textarea>
 
                     <input id="sendesugg" @click="addbooking" type="button"  class="send-message-cta" value="Save" >
                   </div>
                 </form>
-                <!--<blockquote>{{signsurname}}</blockquote>-->
-               <!-- <p style="font-size:50px">&#128295;&#128296;&#128297;</p> -->
-               <!-- <div class="heros-cta">
-                    <a href="#" class="primary-cta">Try for free</a>
-                    <a href="#" class="watch-video-cta">
-                        <img src="../assets/watch.svg" alt="Watch a video">Watch a video
-                    </a>
-                </div> -->
             </div>
-           <!-- <img src="../assets/108487139-window-wash-1440.jpg" class="heros-img" alt="Illustration">-->
+        </div>
+    </section>
+    <section id="book2" style="display: none;" class="hero2">
+        <div class="container">
+            <div class="left-col">
+                <table>
+                  <tr>
+                    <th>Description</th>
+                    <th>Date</th>
+                  </tr>
+                  <tr v-for="n in lim" :key= "n">
+                    <td>{{BookingsArr[n-1]}}</td>
+                    <td>{{BookingDates[n-1]}}</td>
+                  </tr>
+                </table>
+            </div>
         </div>
     </section>
         <div class="feet">
@@ -89,7 +105,15 @@ export default {
       washcount: 0,
       points: 0,
 
-      date_: ''
+      date_: '',
+      Descrip: '',
+      resultsFetched_4: '',
+      lim: 0,
+
+      resultsFetched_5: '',
+      BookingsArr: [],
+      BookingDates: []
+
     }
   },
 
@@ -97,11 +121,51 @@ export default {
     window.removeEventListener('resize', this.removemenu)
   },
   methods: {
-    async addbooking () {
-      swal('', 'Reminder email will be sent 3 days before at 07:02', 'success', {
+    async loadhistory () {
+      await fetch(`https://kabelodatabase.herokuapp.com/get_all_booking`)
+        .then(response => response.json())
+        .then(results => (this.resultsFetched_5 = results))
+      this.lim = this.resultsFetched_5.length
+      for (let index = 0; index < this.lim; index++) {
+        this.BookingsArr[index] = this.resultsFetched_5[index].description_
+        this.BookingDates[index] = this.resultsFetched_5[index].date_
+      }
+    },
+    history (n) {
+      swal('Booked', '', 'success', {
         buttons: false,
         timer: 3000
       })
+      this.removemenu()
+      this.loadhistory()
+      if (n === 1) {
+        document.getElementById('book').style.display = 'inline'
+        document.getElementById('book2').style.display = 'none'
+        document.getElementById('homebooking').style.display = 'inline'
+        document.getElementById('infodata').style.display = 'none'
+      } else {
+        document.getElementById('book').style.display = 'none'
+        document.getElementById('book2').style.display = 'inline'
+        document.getElementById('homebooking').style.display = 'none'
+        document.getElementById('infodata').style.display = 'inline'
+      }
+    },
+    async addbooking () {
+      await fetch(`https://kabelodatabase.herokuapp.com/fn_add_booking/${this.Descrip}/${this.date_}/4`)
+        .then(response => response.json())
+        .then(results => (this.resultsFetched_4 = results))
+      console.log(this.resultsFetched_4[0].fn_add_booking)
+      if (this.resultsFetched_4[0].fn_add_booking > 1) {
+        swal('Booked', '', 'success', {
+          buttons: false,
+          timer: 3000
+        })
+      } else {
+        swal('Booking already exist', '', 'error', {
+          buttons: false,
+          timer: 3000
+        })
+      }
     },
     checksession () {
       if (this.getCookie('usersaki') === 'none') {
@@ -131,8 +195,8 @@ export default {
       document.cookie = 'emailsaki' + '=' + this.signemail + ';' + expires + ';path=/'
       // add procedure that add to log when one login
       // }
-      window.location.replace('http://localhost:8080')
-      // window.location.replace('https://travelsakireminder.web.app')
+      // window.location.replace('http://localhost:8080')
+      window.location.replace('https://travelsakireminder.web.app')
     },
     getCookie (cname) {
       let name = cname + '='
@@ -210,7 +274,7 @@ export default {
           document.getElementById('myDate').max = maxyear + '-' + maxmonth + '-' + maxday
         }
       }
-      document.getElementById('myDate').value = document.getElementById('myDate').min
+      // document.getElementById('myDate').value = document.getElementById('myDate').min
     }
   },
   mounted () {
@@ -681,6 +745,21 @@ nav li a:hover {
   position: fixed;
   left: 30%;
   top: 20%;
+}
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th, td {
+  text-align: left;
+  padding: 8px;
+    font-size: 16px;
+  font-family: 'Indie Flower';
+}
+
+tr:nth-child(even) {
+  background-color: #FFFFFF;
 }
 /*# sourceMappingURL=main.css.map */
 </style>

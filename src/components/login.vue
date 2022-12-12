@@ -194,7 +194,7 @@ export default {
           buttons: false,
           timer: 3000
         })
-        window.location.href = 'http://localhost:8080/#/user' // 'https://travelsakireminder.web.app/#/user' // 'http://localhost:8080/#/user'
+        window.location.href = 'https://travelsakireminder.web.app/#/user' // 'http://localhost:8080/#/user'
       } else if (this.nextpage === 'wrong') {
         // alert('wrong Password')
         swal('wrong Password', '', 'error')
